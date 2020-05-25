@@ -1,0 +1,200 @@
+service:
+  name: serverless-recipe-app-udacity-burak
+
+plugins:
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-plugin-tracing
+provider:
+  name: aws
+  runtime: nodejs12.x
+  environment:
+    TABLE_NAME: recipe-table
+    BUCKET_NAME: recipe-attachments-udagram-burak
+    SECONDARY_INDEX_NAME: recipeSecondaryIndex
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  tracing:
+    lambda: true
+    apiGateway: true
+    iamRoleStatements:
+      - Effect: 'Allow' 
+        Action:
+          - 'xray:PutTraceSegments'
+          - 'xray:PutTelemetryRecords'
+          - 'logs:PutLogEvents'
+        Resource:
+          - '*'
+
+functions:
+
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
+
+  GetRecipes:
+    handler: src/lambda/http/getRecipes.handler
+    events:
+      - http:
+          method: get
+          path: recipes
+          cors: true
+          authorizer: Auth
+    iamRoleStatementsName: ${self:service.name}-get-recipes-op-role-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}
+      - Effect: Allow
+        Action:
+           - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}/index/${self:provider.environment.SECONDARY_INDEX_NAME}
+      
+  CreateRecipe:
+    handler: src/lambda/http/createRecipe.handler
+    events:
+      - http:
+          method: post
+          path: recipes
+          cors: true
+          authorizer: Auth
+          request:
+            schema:
+              application/json: ${file(src/jsonSchemas/create-recipe.json)}
+    iamRoleStatementsName: ${self:service.name}-create-recipe-op-role-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}
+
+  UpdateRecipe:
+    handler: src/lambda/http/updateRecipe.handler
+    events:
+      - http:
+          method: patch
+          path: recipes/{recipeId}
+          cors: true
+          authorizer: Auth
+          request:
+            parameters:
+              paths:
+                recipeId: true
+              request:
+                schema:
+                  application/json: ${file(src/jsonSchemas/update-recipe.json)}
+    iamRoleStatementsName: ${self:service.name}-update-recipe-op-role-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}
+
+  DeleteRecipe:
+    handler: src/lambda/http/deleteRecipe.handler
+    events:
+      - http:
+          method: delete
+          path: recipes/{recipeId}
+          cors: true
+          authorizer: Auth
+          request:
+            parameters:
+              paths:
+                recipeId: true
+    iamRoleStatementsName: ${self:service.name}-delete-op-role-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}
+      
+
+  GenerateUploadUrl:
+    handler: src/lambda/http/generateUploadUrl.handler
+    events:
+      - http:
+          method: post
+          path: recipes/{recipeId}/attachment
+          cors: true
+          authorizer: Auth
+          request:
+            parameters:
+              paths:
+                recipeId: true
+    iamRoleStatementsName: ${self:service.name}-generate-url-op-role-${self:provider.stage}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*  
+
+resources:
+  Resources:
+    AttachmentBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.BUCKET_NAME}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000  
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: "*"
+              Action: "s3:GetObject"
+              Resource: "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*"
+            - Sid: PublicPutForGetBucketObjects
+              Effect: Allow
+              Principal: "*"
+              Action: "s3:PutObject"
+              Resource: "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*"
+        Bucket: !Ref AttachmentBucket
+    RecipesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+          - AttributeName: recipeId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: recipeId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TABLE_NAME}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.SECONDARY_INDEX_NAME}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        

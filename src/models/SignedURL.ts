@@ -1,0 +1,3 @@
+interface SignedUrl {
+    url: string;
+}

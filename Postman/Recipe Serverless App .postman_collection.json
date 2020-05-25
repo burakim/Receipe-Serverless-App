@@ -1,0 +1,309 @@
+{
+	"info": {
+		"_postman_id": "ca7b5927-804a-4d8f-9202-784756ec9177",
+		"name": "Recipe Serverless App ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Recipes",
+			"item": [
+				{
+					"name": "Get all recipes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://{{apiId}}.execute-api.us-east-1.amazonaws.com/dev/recipes",
+							"protocol": "https",
+							"host": [
+								"{{apiId}}",
+								"execute-api",
+								"us-east-1",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"dev",
+								"recipes"
+							]
+						},
+						"description": "List all user's recipes."
+					},
+					"response": []
+				},
+				{
+					"name": "Create recipe",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Recipe 1\",\n\t\"description\": \"Description for Recipe 1\"\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{apiId}}.execute-api.us-east-1.amazonaws.com/dev/recipes",
+							"protocol": "https",
+							"host": [
+								"{{apiId}}",
+								"execute-api",
+								"us-east-1",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"dev",
+								"recipes"
+							]
+						},
+						"description": "Creates a new recipe under the user identity."
+					},
+					"response": []
+				},
+				{
+					"name": "Update recipe",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{authToken}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Recipe 2\",\n\t\"description\": \"Description for Recipe 2 Updated\"\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{apiId}}.execute-api.us-east-1.amazonaws.com/dev/recipes/:recipeId",
+							"protocol": "https",
+							"host": [
+								"{{apiId}}",
+								"execute-api",
+								"us-east-1",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"dev",
+								"recipes",
+								":recipeId"
+							],
+							"variable": [
+								{
+									"key": "recipeId",
+									"value": "22111ef6-1be0-4e70-b82f-d131786cd6cd",
+									"type": "string",
+									"description": "Receip id of the updated entity"
+								}
+							]
+						},
+						"description": "Updates user's recipe."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete recipe",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{apiId}}.execute-api.us-east-1.amazonaws.com/dev/recipes/:recipedId",
+							"protocol": "https",
+							"host": [
+								"{{apiId}}",
+								"execute-api",
+								"us-east-1",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"dev",
+								"recipes",
+								":recipedId"
+							],
+							"variable": [
+								{
+									"key": "recipedId",
+									"value": "888e3122-fb08-45b2-bd5e-6b447cbf72cb",
+									"type": "string",
+									"description": "Receipt id of deleted reciped"
+								}
+							]
+						},
+						"description": "Deletes a recipe of a user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get attachment URL",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "https://{{apiId}}.execute-api.us-east-1.amazonaws.com/dev/recipes/:recipeId/attachment",
+							"protocol": "https",
+							"host": [
+								"{{apiId}}",
+								"execute-api",
+								"us-east-1",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"dev",
+								"recipes",
+								":recipeId",
+								"attachment"
+							],
+							"variable": [
+								{
+									"key": "recipeId",
+									"value": "888e3122-fb08-45b2-bd5e-6b447cbf72cb",
+									"type": "string",
+									"description": "Recipe Id"
+								}
+							]
+						},
+						"description": "Get an attachment URL to allow a user to upload an attachment of a recipe."
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "382fa5ad-9671-4f9e-8a32-ba1df2fc8923",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "1b90e71c-4b51-4971-b6b1-b06140520444",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "782301dd-579b-46a4-b06b-83ca19c2915f",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "02fad94e-2da7-4370-951a-dc47e086de54",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "f5772fcb-29e6-4bcd-bc1c-0a3fd4ba7543",
+			"key": "apiId",
+			"value": "xb7onpwo3f",
+			"type": "string"
+		},
+		{
+			"id": "f1fb58ee-d1fc-45a9-8c1a-1597c8518fbc",
+			"key": "authToken",
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1aSTYzU0J5S2c1MUczbHdRRHBaWCJ9.eyJpc3MiOiJodHRwczovL2J1cmFraW0uYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDVlYzliZTk2Zjc5MDhjMGM2OGEzNzAwMSIsImF1ZCI6Ijl2cXZMR1lSNTJIRVVhaW9tbmRrcFZ6Q0ZsVEU4cFdaIiwiaWF0IjoxNTkwMzgzNjM4LCJleHAiOjE1OTA0MTk2MzgsImF0X2hhc2giOiJTVlZsbzlDT2szUktOMGZtSXhQNHl3Iiwibm9uY2UiOiJrOTNZY3liZVRuU2FsbXZWTmFPbV9fYmN3d01VYkRhNCJ9.RdkAmRhfGo0CWdU-w7wBMhjyY6wrWHqOKZhthYxiZ_wUOkAA-AUyfME-u-u2xGph0Ba4wJ5mIGczpbDha2cApGojVxZJm7AfMxyukXkXzULnDSIiMLuX1Qz7KenFUQv0KyvMMjZgQ-7B2J6Ykexyh5XVm9HrpY-ykAPix3sgdHl7qz5gX-qQCOPz_eecl8s8ENtTZJHJaiqORERy87Svq-2mGjj6plQzLfeZBKVBXy8Jfhe5ecYmfyZ-uUvPvNXeHaMT0M9yhAaTAkl9hYRtHO2buAsEIeLUMAx2mZyPAIPGKt3Zx_uHQMZudWQESQnbR_-pVvJvXnEijBo939C_2g",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
